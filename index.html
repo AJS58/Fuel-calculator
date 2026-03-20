@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fuel Cost Calculator</title>
+<style>
+  :root{
+    --blue1:#1e5eff;
+    --blue2:#2d7cff;
+    --bg:#eef3f8;
+    --card:#ffffff;
+    --line:#dbe3ee;
+    --text:#1f2d3d;
+    --muted:#6b7a90;
+    --green1:#45bb43;
+    --green2:#2f9d42;
+    --red:#c71f1f;
+  }
+
+  *{box-sizing:border-box}
+
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+    background:radial-gradient(circle at top,#f8fbff 0%,var(--bg) 45%,#e7edf6 100%);
+    color:var(--text);
+    min-height:100vh;
+    padding:18px;
+  }
+
+  .phone-shell{
+    max-width:460px;
+    margin:0 auto;
+    border-radius:34px;
+    background:linear-gradient(180deg,#1f2430 0%,#0f1116 100%);
+    padding:10px;
+    box-shadow:0 30px 60px rgba(0,0,0,.25), inset 0 0 0 1px rgba(255,255,255,.08);
+  }
+
+  .app{
+    background:#f7f9fc;
+    border-radius:28px;
+    overflow:hidden;
+    min-height:820px;
+  }
+
+  .status{
+    height:34px;
+    background:linear-gradient(135deg,#1d4fd7 0%,#2d7cff 100%);
+    position:relative;
+  }
+
+  .notch{
+    width:150px;
+    height:24px;
+    background:#0b0c10;
+    border-bottom-left-radius:16px;
+    border-bottom-right-radius:16px;
+    position:absolute;
+    left:50%;
+    transform:translateX(-50%);
+    top:0;
+  }
+
+  .header{
+    background:linear-gradient(135deg,var(--blue1) 0%,var(--blue2) 100%);
+    color:#fff;
+    padding:18px 20px 20px;
+    position:relative;
+    box-shadow:inset 0 -1px 0 rgba(255,255,255,.12);
+  }
+
+  .header h1{
+    margin:0;
+    text-align:center;
+    font-size:20px;
+    font-weight:800;
+    letter-spacing:.2px;
+  }
+
+  .gear{
+    position:absolute;
+    right:18px;
+    top:14px;
+    font-size:28px;
+    opacity:.95;
+    user-select:none;
+  }
+
+  .content{padding:18px}
+
+  .section-title{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin:6px 0 14px;
+    color:#324c74;
+    font-weight:800;
+    font-size:15px;
+  }
+
+  .section-title::after{
+    content:"";
+    height:1px;
+    background:var(--line);
+    flex:1;
+  }
+
+  .panel{
+    background:var(--card);
+    border:1px solid #e8eef6;
+    border-radius:18px;
+    padding:14px;
+    box-shadow:0 6px 18px rgba(24,39,75,.05);
+    margin-bottom:18px;
+  }
+
+  .field{
+    display:grid;
+    grid-template-columns:1.2fr 1fr;
+    align-items:center;
+    gap:14px;
+    padding:10px 0;
+    border-bottom:1px solid #edf2f7;
+  }
+
+  .field:last-of-type{border-bottom:none}
+
+  .field label{
+    font-size:15px;
+    font-weight:700;
+    color:#344b6b;
+  }
+
+  .field .sub{
+    display:block;
+    margin-top:3px;
+    font-weight:500;
+    color:var(--muted);
+    font-size:12px;
+  }
+
+  .field input{
+    width:100%;
+    padding:13px 14px;
+    border-radius:12px;
+    border:1px solid #cad5e3;
+    background:#fff;
+    font-size:16px;
+    font-weight:700;
+    text-align:center;
+    color:#162236;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.9);
+    appearance:none;
+    -webkit-appearance:none;
+    -moz-appearance:textfield;
+  }
+
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button{
+    -webkit-appearance:none;
+    margin:0;
+  }
+
+  .field input:focus{
+    outline:none;
+    border-color:#79a9ff;
+    box-shadow:0 0 0 4px rgba(45,124,255,.14);
+  }
+
+  .adjust-note{
+    text-align:right;
+    color:#8a97ab;
+    font-size:12px;
+    margin-top:-4px;
+    padding-right:4px;
+  }
+
+  .results-box{display:none}
+
+  .result-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:14px;
+    background:#fdfefe;
+    border:1px solid #dce6f0;
+    border-radius:12px;
+    padding:14px 16px;
+    margin-bottom:12px;
+  }
+
+  .result-row span:first-child{
+    font-size:15px;
+    font-weight:800;
+    color:#324c74;
+  }
+
+  .result-row span:last-child{
+    font-size:18px;
+    font-weight:900;
+    color:#122238;
+    text-align:right;
+  }
+
+  .result-row.big span:last-child{font-size:20px}
+  .result-positive{color:#15803d !important}
+  .result-negative{color:var(--red) !important}
+
+  .button-wrap{padding-top:8px}
+
+  button{
+    width:100%;
+    border:none;
+    border-radius:14px;
+    padding:16px 18px;
+    font-size:18px;
+    font-weight:900;
+    color:#fff;
+    background:linear-gradient(180deg,var(--green1) 0%,#34ab3a 45%,var(--green2) 100%);
+    box-shadow:0 8px 18px rgba(53,154,66,.32), inset 0 1px 0 rgba(255,255,255,.35);
+    cursor:pointer;
+    letter-spacing:.2px;
+  }
+
+  button:active{transform:translateY(1px)}
+  .footer-space{height:30px}
+
+  @media (max-width:480px){
+    body{padding:8px}
+    .app{min-height:auto}
+    .field{
+      grid-template-columns:1fr;
+      gap:8px;
+    }
+    .field input{text-align:left}
+  }
+</style>
+</head>
+<body>
+  <div class="phone-shell">
+    <div class="app">
+      <div class="status"><div class="notch"></div></div>
+
+      <div class="header">
+        <div class="gear">⚙︎</div>
+        <h1>Fuel Cost Calculator</h1>
+      </div>
+
+      <div class="content">
+        <div class="section-title">Trip Details</div>
+        <div class="panel">
+          <div class="field">
+            <label for="distance">Distance <span class="sub">(miles)</span></label>
+            <input id="distance" type="text" inputmode="decimal" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" value="" placeholder="">
+          </div>
+
+          <div class="field">
+            <label for="mpg">Car MPG</label>
+            <input id="mpg" type="text" inputmode="decimal" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" value="" placeholder="">
+          </div>
+
+          <div class="field">
+            <label for="price">Fuel Price <span class="sub">(£ / litre)</span></label>
+            <input id="price" type="text" inputmode="decimal" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" value="" placeholder="">
+          </div>
+          <div class="adjust-note">— Adjustable —</div>
+
+          <div class="field">
+            <label for="payment">Payment Received <span class="sub">(£)</span></label>
+            <input id="payment" type="text" inputmode="decimal" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" value="" placeholder="">
+          </div>
+        </div>
+
+        <div class="section-title">Results</div>
+        <div class="panel results-box" id="results">
+          <div class="result-row">
+            <span>Fuel Used</span>
+            <span id="fuelUsed">0.00 L</span>
+          </div>
+
+          <div class="result-row">
+            <span>Cost per Mile</span>
+            <span id="costPerMile">£0.00</span>
+          </div>
+
+          <div class="result-row">
+            <span>Fuel Cost</span>
+            <span id="tripCost">£0.00</span>
+          </div>
+
+          <div class="result-row big">
+            <span>Profit / Loss</span>
+            <span id="profitLoss">£0.00</span>
+          </div>
+        </div>
+
+        <div class="button-wrap">
+          <button id="calcBtn" type="button">Calculate</button>
+        </div>
+
+        <div class="footer-space"></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+function money(value) {
+  return "£" + value.toFixed(2);
+}
+
+function parseNumber(id) {
+  var raw = document.getElementById(id).value;
+  if (!raw) return NaN;
+  raw = raw.trim().replace(/,/g, ".");
+  return Number(raw);
+}
+
+function calculateFuel() {
+  var distance = parseNumber("distance");
+  var mpg = parseNumber("mpg");
+  var price = parseNumber("price");
+  var payment = parseNumber("payment");
+
+  if (isNaN(distance) || isNaN(mpg) || isNaN(price) || isNaN(payment) ||
+      distance <= 0 || mpg <= 0 || price <= 0 || payment < 0) {
+    alert("Please enter valid numbers in all fields.");
+    return;
+  }
+
+  var litresPerGallon = 4.55;
+  var litresUsed = (distance / mpg) * litresPerGallon;
+  var tripCost = litresUsed * price;
+  var costPerMile = tripCost / distance;
+  var result = payment - tripCost;
+
+  document.getElementById("fuelUsed").textContent = litresUsed.toFixed(2) + " L";
+  document.getElementById("costPerMile").textContent = money(costPerMile);
+  document.getElementById("tripCost").textContent = money(tripCost);
+
+  var profitLoss = document.getElementById("profitLoss");
+  if (result >= 0) {
+    profitLoss.textContent = "Profit " + money(result);
+    profitLoss.className = "result-positive";
+  } else {
+    profitLoss.textContent = "Loss " + money(Math.abs(result));
+    profitLoss.className = "result-negative";
+  }
+
+  document.getElementById("results").style.display = "block";
+}
+
+document.getElementById("calcBtn").addEventListener("click", calculateFuel);
+
+window.addEventListener("load", function () {
+  ["distance","mpg","price","payment"].forEach(function(id){
+    var el = document.getElementById(id);
+    el.value = "";
+    el.setAttribute("value", "");
+  });
+});
+</script>
+</body>
+</html>
